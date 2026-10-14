@@ -263,9 +263,9 @@ class _PrefsState extends State<_Prefs> {
         '(${lufsToSoundpadDb(s.normalizeTarget).toStringAsFixed(0)} dB)',
       ),
       subtitle: Slider(
-        value: s.normalizeTarget.clamp(-40.0, -8.0),
-        min: -40,
-        max: -8,
+        value: s.normalizeTarget.clamp(minLoudnessTarget, maxLoudnessTarget),
+        min: minLoudnessTarget,
+        max: maxLoudnessTarget,
         onChanged: s.normalize
             ? (v) {
                 s.normalizeTarget = v.roundToDouble();

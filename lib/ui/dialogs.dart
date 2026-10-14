@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 
 import '../app/controller.dart';
+import '../models/settings.dart' show minLoudnessTarget, maxLoudnessTarget;
 import '../models/sound_list.dart';
 import '../services/dsp.dart';
 import 'common.dart';
@@ -122,7 +123,9 @@ class _VoiceMeasureDialogState extends State<_VoiceMeasureDialog> {
     setState(() {
       _running = false;
       _done = true;
-      _result = v.isFinite ? v : null;
+      // A near-silent result means the mic barely picked anything up; using
+      // it as a target would make every sound inaudible.
+      _result = v.isFinite && v >= minLoudnessTarget ? v : null;
     });
   }
 
@@ -176,7 +179,7 @@ class _VoiceMeasureDialogState extends State<_VoiceMeasureDialog> {
           FilledButton(
             onPressed: () {
               app.settings.normalize = true;
-              app.settings.normalizeTarget = _result!.clamp(-40.0, -8.0);
+              app.settings.normalizeTarget = _result!.clamp(minLoudnessTarget, maxLoudnessTarget).roundToDouble();
               app.settingsChanged(audio: true);
               app.notify('Volume normalization set to ${app.settings.normalizeTarget.toStringAsFixed(1)} LUFS');
               Navigator.pop(context);

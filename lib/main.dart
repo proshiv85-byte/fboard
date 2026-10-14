@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/controller.dart';
@@ -41,7 +42,29 @@ Future<void> main(List<String> args) async {
     // Some desktops never answer; don't block startup on it.
     accent = await DynamicColorPlugin.getAccentColor().timeout(const Duration(milliseconds: 800));
   } catch (_) {}
+  if (Platform.environment['FBOARD_FRAME_STATS'] != null) _logFrameStats();
   runApp(FboardApp(systemAccent: accent));
+}
+
+/// Debug aid: FBOARD_FRAME_STATS=1 prints frame timings every 2 seconds.
+void _logFrameStats() {
+  final frames = <FrameTiming>[];
+  SchedulerBinding.instance.addTimingsCallback(frames.addAll);
+  Timer.periodic(const Duration(seconds: 2), (_) {
+    if (frames.isEmpty) return;
+    double ms(Duration d) => d.inMicroseconds / 1000;
+    final build = frames.map((f) => ms(f.buildDuration)).toList();
+    final raster = frames.map((f) => ms(f.rasterDuration)).toList();
+    final total = frames.map((f) => ms(f.totalSpan)).toList();
+    double avg(List<double> l) => l.reduce((a, b) => a + b) / l.length;
+    double mx(List<double> l) => l.reduce((a, b) => a > b ? a : b);
+    stderr.writeln(
+      'frames ${frames.length}/2s  build avg ${avg(build).toStringAsFixed(1)} max ${mx(build).toStringAsFixed(1)}'
+      '  raster avg ${avg(raster).toStringAsFixed(1)} max ${mx(raster).toStringAsFixed(1)}'
+      '  total max ${mx(total).toStringAsFixed(1)} ms',
+    );
+    frames.clear();
+  });
 }
 
 Future<void> _showWindow() async {

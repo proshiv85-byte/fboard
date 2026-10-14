@@ -115,6 +115,11 @@ void main() {
       expect(c.normalizeTarget, -18);
     });
 
+    test('out-of-range loudness targets reset to the default', () {
+      expect(Settings.fromJson({'normalizeTarget': -40}).normalizeTarget, -23);
+      expect(Settings.fromJson({'normalizeTarget': -16}).normalizeTarget, -16);
+    });
+
     test('unknown or missing values fall back to defaults', () {
       final c = Settings.fromJson({'playMode': 'nonsense', 'speakerVolume': 1});
       expect(c.playMode, PlayMode.both);

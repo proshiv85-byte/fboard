@@ -8,6 +8,13 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 install -d "$DEST$PREFIX/lib/fboard" "$DEST$PREFIX/bin"
 cp -a "$BUNDLE"/. "$DEST$PREFIX/lib/fboard/"
 ln -sf "$PREFIX/lib/fboard/fboard" "$DEST$PREFIX/bin/fboard"
+# Flutter plugin libraries carry runpaths into the build tree; point them at
+# the bundle instead (rpm rejects the originals).
+if command -v patchelf >/dev/null; then
+  for f in "$DEST$PREFIX"/lib/fboard/lib/*.so; do
+    [ -n "$(patchelf --print-rpath "$f" 2>/dev/null)" ] && patchelf --set-rpath '$ORIGIN' "$f"
+  done
+fi
 install -Dm644 "$ROOT/data/$APPID.desktop" "$DEST$PREFIX/share/applications/$APPID.desktop"
 install -Dm644 "$ROOT/data/$APPID.metainfo.xml" "$DEST$PREFIX/share/metainfo/$APPID.metainfo.xml"
 install -Dm644 "$ROOT/data/icons/$APPID.svg" "$DEST$PREFIX/share/icons/hicolor/scalable/apps/$APPID.svg"

@@ -150,6 +150,10 @@ class NotificationPref {
       : NotificationPref();
 }
 
+/// Supported normalization targets (LUFS).
+const minLoudnessTarget = -35.0;
+const maxLoudnessTarget = -10.0;
+
 class Settings {
   // ------------------------------------------------------------- interface
   String themeMode = 'system'; // system | light | dark
@@ -360,6 +364,9 @@ class Settings {
     s.speakerMuted = v('speakerMuted', s.speakerMuted);
     s.normalize = v('normalize', s.normalize);
     s.normalizeTarget = v('normalizeTarget', s.normalizeTarget);
+    // Values outside the supported range came from a failed voice measurement
+    // (near-silent microphone) and make every sound inaudible.
+    if (s.normalizeTarget < minLoudnessTarget || s.normalizeTarget > maxLoudnessTarget) s.normalizeTarget = -23;
     s.dynamicNormalization = v('dynamicNormalization', s.dynamicNormalization);
     s.micVolume = v('micVolume', s.micVolume);
     s.blockVoice = v('blockVoice', s.blockVoice);

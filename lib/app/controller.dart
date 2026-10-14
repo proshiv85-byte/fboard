@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
@@ -1456,6 +1457,29 @@ class AppController extends ChangeNotifier {
     final old = status.value;
     status.value = s;
     if ((old.state == 0) != (s.state == 0) || old.state != s.state) notifyListeners();
+    // While something plays, follow it every rendered frame so the seek bar,
+    // timer and meters move smoothly; the timer alone only ticks at 20 Hz.
+    if (s.state == 1 && !_framePolling) {
+      _framePolling = true;
+      _pollEachFrame();
+    }
+  }
+
+  bool _framePolling = false;
+
+  void _pollEachFrame() {
+    SchedulerBinding.instance.scheduleFrameCallback((_) {
+      final s = native.status();
+      final old = status.value;
+      status.value = s;
+      if (old.state != s.state) notifyListeners();
+      if (s.state == 1) {
+        _pollEachFrame();
+      } else {
+        _framePolling = false;
+      }
+    });
+    SchedulerBinding.instance.scheduleFrame();
   }
 
   @override

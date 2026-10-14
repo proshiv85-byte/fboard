@@ -23,7 +23,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libpulse-dev \
             libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libx11-dev libxi-dev \
-            libfuse2t64 file
+            libfuse2t64 file patchelf
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -67,7 +67,7 @@ jobs:
       - name: Build dependencies
         run: |
           dnf install -y git clang cmake ninja-build pkgconf-pkg-config gtk3-devel pulseaudio-libs-devel \
-            ffmpeg-free-devel libX11-devel libXi-devel rpm-build which xz unzip findutils jq
+            ffmpeg-free-devel libX11-devel libXi-devel rpm-build which xz unzip findutils jq patchelf
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
