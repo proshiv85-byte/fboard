@@ -1,0 +1,29 @@
+# Debian/Ubuntu package (built on Ubuntu 24.04). Run from the repo root after
+# packaging/install.sh <bundle> pkgroot /usr.
+name: fboard
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: sound
+maintainer: fboard contributors <noreply@github.com>
+description: |
+  Soundboard that plays sounds through your microphone.
+  Global hotkeys, categories, hotbar, recorder and sound editor.
+homepage: https://github.com/proshiv85-byte/fboard
+license: GPL-3.0-or-later
+depends:
+  - libgtk-3-0t64 | libgtk-3-0
+  - libpulse0
+  - libavcodec60 | libavcodec61
+  - libavformat60 | libavformat61
+  - libavutil58 | libavutil59
+  - libswresample4 | libswresample5
+  - libx11-6
+recommends:
+  - pipewire-pulse
+contents:
+  - src: ./pkgroot/usr/
+    dst: /usr/
+    type: tree
+scripts:
+  postinstall: ./packaging/postinstall.sh

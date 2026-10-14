@@ -1,0 +1,119 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: '3.47.7'
+
+jobs:
+  ubuntu:
+    name: Bundle, AppImage, deb
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libpulse-dev \
+            libavformat-dev libavcodec-dev libavutil-dev libswresample-dev libx11-dev libxi-dev \
+            libfuse2t64 file
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter test
+      - run: flutter build linux --release
+      - name: Version
+        id: v
+        run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')" >> "$GITHUB_OUTPUT"
+      - name: Tarball
+        run: |
+          tar -C build/linux/x64/release -czf fboard-${{ steps.v.outputs.version }}-linux-x86_64.tar.gz bundle
+      - name: AppImage
+        run: packaging/appimage/build.sh build/linux/x64/release/bundle ${{ steps.v.outputs.version }}
+      - name: deb
+        run: |
+          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
+          packaging/install.sh build/linux/x64/release/bundle pkgroot /usr
+          VERSION=${{ steps.v.outputs.version }} ~/go/bin/nfpm package -f packaging/nfpm.yaml -p deb \
+            -t fboard_${{ steps.v.outputs.version }}_amd64.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu
+          path: |
+            *.tar.gz
+            *.AppImage
+            *.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle
+          path: build/linux/x64/release/bundle
+
+  fedora:
+    name: rpm
+    runs-on: ubuntu-24.04
+    container: fedora:42
+    steps:
+      - name: Build dependencies
+        run: |
+          dnf install -y git clang cmake ninja-build pkgconf-pkg-config gtk3-devel pulseaudio-libs-devel \
+            ffmpeg-free-devel libX11-devel libXi-devel rpm-build which xz unzip findutils
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+      - run: git config --global --add safe.directory '*'
+      - run: flutter pub get && flutter build linux --release
+      - run: rpmbuild -bb --define "_srcdir $PWD" --define "_rpmdir $PWD/rpm" packaging/fboard.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpm
+          path: rpm/*/*.rpm
+
+  flatpak:
+    name: Flatpak
+    needs: ubuntu
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: bundle
+          path: bundle
+      - run: chmod +x bundle/fboard
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: fboard.flatpak
+          manifest-path: packaging/flatpak/io.github.proshiv85_byte.fboard.yml
+          cache: false
+
+  release:
+    name: GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ubuntu, fedora, flatpak]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/ubuntu/*
+            dist/rpm/**/*.rpm
+            dist/fboard-x86_64-*/*.flatpak
+            dist/**/*.flatpak
+          generate_release_notes: true

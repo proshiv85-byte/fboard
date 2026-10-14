@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.proshiv85_byte.fboard</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>fboard</name>
+  <summary>Soundboard that plays sounds through your microphone</summary>
+  <description>
+    <p>fboard is a free and open-source soundboard for Linux. It plays sounds into your microphone
+      so others hear them in voice chats and games, controlled by global hotkeys.</p>
+    <ul>
+      <li>Virtual microphone that mixes your voice and your sounds (PipeWire and PulseAudio)</li>
+      <li>Global hotkeys on X11 and every Wayland desktop, including mouse buttons</li>
+      <li>Categories, hotbar, instant search and sound lists</li>
+      <li>Volume normalization, block voice, hear myself</li>
+      <li>Sound recorder and sound editor</li>
+      <li>Auto Keys that press push-to-talk for you</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.proshiv85_byte.fboard.desktop</launchable>
+  <url type="homepage">https://github.com/proshiv85-byte/fboard</url>
+  <url type="bugtracker">https://github.com/proshiv85-byte/fboard/issues</url>
+  <developer id="io.github.proshiv85_byte">
+    <name>fboard contributors</name>
+  </developer>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.0.0" date="2026-10-14"/>
+  </releases>
+</component>

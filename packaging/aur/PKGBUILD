@@ -1,0 +1,29 @@
+# Maintainer: fboard contributors
+pkgname=fboard
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Free and open-source soundboard: play sounds through your microphone with global hotkeys"
+arch=('x86_64' 'aarch64')
+url="https://github.com/proshiv85-byte/fboard"
+license=('GPL-3.0-or-later')
+depends=('gtk3' 'libpulse' 'ffmpeg' 'libx11' 'hicolor-icon-theme')
+optdepends=('pipewire-pulse: recommended sound server'
+            'xdg-desktop-portal: global shortcuts without input group access')
+makedepends=('flutter' 'clang' 'cmake' 'ninja' 'pkgconf' 'git')
+install=fboard.install
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd "$pkgname-$pkgver"
+  flutter --disable-analytics >/dev/null 2>&1 || true
+  flutter pub get
+  flutter build linux --release
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  local arch=x64
+  [[ $CARCH == aarch64 ]] && arch=arm64
+  packaging/install.sh "build/linux/$arch/release/bundle" "$pkgdir" /usr
+}

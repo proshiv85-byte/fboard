@@ -1,0 +1,4 @@
+# fboard: allow the logged-in user to create virtual input devices (Auto Keys,
+# hotkey blocking). Reading keyboards for global hotkeys additionally needs the
+# user to be in the "input" group.
+KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=fboard
+GenericName=Soundboard
+Comment=Play sounds through your microphone with global hotkeys
+Exec=fboard %F
+Icon=io.github.proshiv85_byte.fboard
+Terminal=false
+Categories=AudioVideo;Audio;Utility;
+Keywords=soundboard;soundpad;microphone;sounds;hotkeys;voice;discord;
+StartupWMClass=io.github.proshiv85_byte.fboard
+SingleMainWindow=true

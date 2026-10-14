@@ -1,0 +1,33 @@
+# Flatpak manifest. Packages the prebuilt Flutter bundle (Flutter can't
+# download its SDK inside flatpak-builder); CI places it in ./bundle.
+app-id: io.github.proshiv85_byte.fboard
+runtime: org.gnome.Platform
+runtime-version: '48'
+sdk: org.gnome.Sdk
+command: fboard
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=all                    # /dev/input (hotkeys) and /dev/uinput (Auto Keys)
+  - --socket=pulseaudio             # virtual microphone and playback
+  - --filesystem=home               # sound files anywhere in home
+  - --filesystem=xdg-run/hypr:ro    # active window detection on Hyprland
+  - --talk-name=org.freedesktop.FileManager1
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --own-name=org.kde.StatusNotifierItem-2-1
+add-extensions:
+  org.freedesktop.Platform.codecs-extra:
+    directory: lib/codecs-extra
+    version: '24.08'
+    add-ld-path: lib
+modules:
+  - name: fboard
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/lib/codecs-extra
+      - ./packaging/install.sh bundle "" /app
+      - rm -rf /app/lib/udev
+    sources:
+      - type: dir
+        path: ../..
