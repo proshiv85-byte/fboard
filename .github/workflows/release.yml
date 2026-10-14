@@ -34,7 +34,8 @@ jobs:
       - run: flutter build linux --release
       - name: Version
         id: v
-        run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')" >> "$GITHUB_OUTPUT"
       - name: Tarball
         run: |
           tar -C build/linux/x64/release -czf fboard-${{ steps.v.outputs.version }}-linux-x86_64.tar.gz bundle
