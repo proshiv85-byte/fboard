@@ -67,7 +67,7 @@ jobs:
       - name: Build dependencies
         run: |
           dnf install -y git clang cmake ninja-build pkgconf-pkg-config gtk3-devel pulseaudio-libs-devel \
-            ffmpeg-free-devel libX11-devel libXi-devel rpm-build which xz unzip findutils
+            ffmpeg-free-devel libX11-devel libXi-devel rpm-build which xz unzip findutils jq
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
